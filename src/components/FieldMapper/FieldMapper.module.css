@@ -1,0 +1,12 @@
+.fields {
+  display: grid;
+  grid-template-columns: [fieldname] 200px [select] auto;
+  grid-gap: 0.5em 0;
+}
+
+.fieldName {
+  grid-column: fieldname;
+}
+.select {
+  grid-column: select;
+}

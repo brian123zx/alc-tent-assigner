@@ -1,24 +1,50 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { useCallback, useState } from "react";
+import "./App.css";
+import FileUploader from "./components/FileUploader";
+import Papa from "papaparse";
+import FieldMapper from "./components/FieldMapper";
+import { AppState, FieldMap } from "./types";
 
 function App() {
+  const [csv, setCsv] = useState<Papa.ParseResult<unknown>>();
+  const [mappedFields, setMappedFields] = useState<FieldMap>();
+  const [appState, setAppState] = useState<AppState>("preProcess");
+
+  const onFileSelected = useCallback(
+    (content: string) => {
+      const parsedContent = Papa.parse(content, {
+        header: true,
+      });
+      setCsv(parsedContent);
+    },
+    [csv]
+  );
+
+  const onFieldsMapped = useCallback((fields: FieldMap | undefined) => {
+    setMappedFields(fields);
+    console.log(fields);
+  }, []);
+
+  const onProcessClicked = () => {
+    setAppState("processing");
+  };
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <div>
+        <FileUploader onFileSelected={onFileSelected} />
+      </div>
+      {!csv?.meta?.fields && <div>Your CSV doesn't contain any fields.</div>}
+      {csv?.meta?.fields && (
+        <FieldMapper fields={csv.meta.fields} onFieldsMapped={onFieldsMapped} />
+      )}
+      {csv && (
+        <div>
+          <button onClick={onProcessClicked} disabled={!mappedFields}>
+            Process
+          </button>
+        </div>
+      )}
     </div>
   );
 }
