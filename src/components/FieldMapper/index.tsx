@@ -1,4 +1,10 @@
-import React, { ChangeEvent, useCallback, useState, useEffect } from "react";
+import React, {
+  ChangeEvent,
+  useCallback,
+  useState,
+  useEffect,
+  Fragment,
+} from "react";
 import styles from "./FieldMapper.module.css";
 import { FieldList, FieldMap } from "../../types";
 
@@ -58,11 +64,14 @@ const FieldMapper = ({ fields, onFieldsMapped }: FieldMapperProps) => {
   }, [fieldMap]);
 
   return (
-    <div className={styles.fields}>
-      {fields.map((field, idx) => (
-        <FieldRow field={field} index={idx} onFieldSelect={onFieldSelect} />
-      ))}
-    </div>
+    <Fragment>
+      Pick the fields from the uploaded spreadsheet to use when processing.
+      <div className={styles.fields}>
+        {fields.map((field, idx) => (
+          <FieldRow field={field} index={idx} onFieldSelect={onFieldSelect} />
+        ))}
+      </div>
+    </Fragment>
   );
 };
 

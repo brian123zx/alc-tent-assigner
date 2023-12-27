@@ -11,3 +11,8 @@ export type FieldMap = {
 }
 
 export type AppState = 'preProcess' | 'processing' | 'complete'
+
+export type WorkerData = {
+  csv: Papa.ParseResult<unknown>,
+  fields: FieldMap
+}

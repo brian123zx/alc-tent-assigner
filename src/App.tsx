@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import "./App.css";
 import FileUploader from "./components/FileUploader";
 import Papa from "papaparse";
@@ -22,12 +22,31 @@ function App() {
 
   const onFieldsMapped = useCallback((fields: FieldMap | undefined) => {
     setMappedFields(fields);
-    console.log(fields);
   }, []);
 
   const onProcessClicked = () => {
     setAppState("processing");
   };
+
+  const worker: Worker = useMemo(
+    () => new Worker(new URL("./worker/processCsv.ts", import.meta.url)),
+    []
+  );
+
+  useEffect(() => {
+    if (!worker) return;
+    worker.onmessage = (e: MessageEvent<string>) => {
+      console.log("worker finished with", e.data);
+    };
+  }, [worker]);
+
+  useEffect(() => {
+    if (appState === "processing")
+      worker.postMessage({
+        csv,
+        fields: mappedFields,
+      });
+  }, [appState]);
 
   return (
     <div className="App">
