@@ -21,9 +21,9 @@ const FieldRow = ({ field, index, onFieldSelect }: FieldRowProps) => {
     onFieldSelect(index, value as keyof typeof FieldList);
   }, []);
   return (
-    <React.Fragment>
-      <div className={styles.fieldName}>{field}</div>
-      <div className={styles.select}>
+    <div className="grid">
+      <h6 className={styles.fieldName}>{field}</h6>
+      <div>
         <select onChange={onSelectChanged}>
           <option value="">Select field</option>
           {_.map(FieldList, (field, fieldId) => {
@@ -35,7 +35,7 @@ const FieldRow = ({ field, index, onFieldSelect }: FieldRowProps) => {
           })}
         </select>
       </div>
-    </React.Fragment>
+    </div>
   );
 };
 
@@ -69,7 +69,7 @@ const FieldMapper = ({ fields, onFieldsMapped }: FieldMapperProps) => {
   return (
     <Fragment>
       Pick the fields from the uploaded spreadsheet to use when processing.
-      <div className={styles.fields}>
+      <div>
         {fields.map((field, idx) => (
           <FieldRow
             key={field}
