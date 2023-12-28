@@ -76,8 +76,8 @@ self.onmessage = (e: MessageEvent<WorkerData>) => {
     const curRecord = sortedData[cur];
     const iRecord = sortedData[i];
     if (
-      iRecord[fieldNames.requestId] &&
-      curRecord[fieldNames.requestId] === iRecord[fieldNames.requestId]
+      // iRecord[fieldNames.requestId] &&
+      curRecord[fieldNames.requestId] === iRecord[fieldNames.requestId] && (curRecord[fieldNames.requestId] || i - cur < 2)
     ) {
       // Keep iterating until we find a new team
       continue;
@@ -109,6 +109,11 @@ const assignTeam = (team: Record<string, string>[], grid: TentRow[], fieldNames:
 
   const numTentsNeeded = numAssignments + Math.ceil(numUnassigned / 2);
 
+  const createRow = () => {
+    grid.push(new TentRow(numCols, grid.length));
+    return grid[grid.length - 1];
+  }
+
   // Find row that can fit
   let row;
   for (let i = 0; i < grid.length; i++) {
@@ -119,8 +124,7 @@ const assignTeam = (team: Record<string, string>[], grid: TentRow[], fieldNames:
   }
   if (!row) {
     // Create a new row
-    grid.push(new TentRow(numCols, grid.length));
-    row = grid[grid.length - 1];
+    row = createRow();
   }
 
   for (let i = 0; i < team.length; i++) {
