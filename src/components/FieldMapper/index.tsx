@@ -5,8 +5,9 @@ import React, {
   useEffect,
   Fragment,
 } from "react";
+import _ from "lodash";
 import styles from "./FieldMapper.module.css";
-import { FieldList, FieldMap } from "../../types";
+import { FieldList, FieldMap, MaybeFieldMap } from "../../types";
 
 type FieldRowProps = {
   field: string;
@@ -25,11 +26,13 @@ const FieldRow = ({ field, index, onFieldSelect }: FieldRowProps) => {
       <div className={styles.select}>
         <select onChange={onSelectChanged}>
           <option value="">Select field</option>
-          {(Object.keys(FieldList) as (keyof typeof FieldList)[]).map(
-            (field) => (
-              <option value={field}>{FieldList[field]}</option>
-            )
-          )}
+          {_.map(FieldList, (field, fieldId) => {
+            return (
+              <option key={fieldId} value={fieldId}>
+                {field}
+              </option>
+            );
+          })}
         </select>
       </div>
     </React.Fragment>
@@ -42,7 +45,7 @@ type FieldMapperProps = {
 };
 
 const FieldMapper = ({ fields, onFieldsMapped }: FieldMapperProps) => {
-  const [fieldMap, setFieldMap] = useState<FieldMap>();
+  const [fieldMap, setFieldMap] = useState<MaybeFieldMap>();
   const onFieldSelect = useCallback(
     (index: number, field: keyof typeof FieldList) => {
       setFieldMap((prevFieldMap) => ({
@@ -60,7 +63,7 @@ const FieldMapper = ({ fields, onFieldsMapped }: FieldMapperProps) => {
       return onFieldsMapped(undefined);
     }
 
-    onFieldsMapped(fieldMap);
+    onFieldsMapped(fieldMap as FieldMap);
   }, [fieldMap]);
 
   return (
@@ -68,7 +71,12 @@ const FieldMapper = ({ fields, onFieldsMapped }: FieldMapperProps) => {
       Pick the fields from the uploaded spreadsheet to use when processing.
       <div className={styles.fields}>
         {fields.map((field, idx) => (
-          <FieldRow field={field} index={idx} onFieldSelect={onFieldSelect} />
+          <FieldRow
+            key={field}
+            field={field}
+            index={idx}
+            onFieldSelect={onFieldSelect}
+          />
         ))}
       </div>
     </Fragment>

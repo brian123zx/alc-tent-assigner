@@ -1,18 +1,22 @@
 export const FieldList = {
-  riderName: "Rider name",
   requestId: "Proximity request ID",
   acceptanceId: "Tent acceptance ID",
   hasMedicalDevice: "Medical device",
-
-}
+};
 
 export type FieldMap = {
-  [p in keyof typeof FieldList]?: number
-}
+  [p in keyof typeof FieldList]: number;
+};
+export type MaybeFieldMap = {
+  [p in keyof typeof FieldList]?: number;
+};
 
-export type AppState = 'preProcess' | 'processing' | 'complete'
+export type AppState = "preProcess" | "processing" | "complete";
 
 export type WorkerData = {
-  csv: Papa.ParseResult<unknown>,
-  fields: FieldMap
-}
+  csv: Papa.ParseResult<Record<string, string>>;
+  fields: FieldMap;
+  numCols: number;
+};
+
+export const TENT_ID_FIELD = 'Tent ID'
