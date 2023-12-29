@@ -1,12 +1,11 @@
 import { useFilePicker } from "use-file-picker";
-import { SelectedFiles } from "use-file-picker/dist/interfaces";
 
 type FileUploaderProps = {
   onFileSelected: (content: string) => void;
 };
 
 const FileUploader = ({ onFileSelected }: FileUploaderProps) => {
-  const { openFilePicker, filesContent, loading } = useFilePicker({
+  const { openFilePicker, loading } = useFilePicker({
     accept: ".csv",
     multiple: false,
     onFilesSelected(data) {

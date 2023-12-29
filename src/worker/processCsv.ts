@@ -1,6 +1,6 @@
 /* eslint-disable no-restricted-globals */
 import _ from "lodash";
-import { FieldList, FieldMap, TENT_ID_FIELD, WorkerData } from "../types";
+import { FieldMap, TENT_ID_FIELD, WorkerData } from "../types";
 
 type Tent = {
   /**

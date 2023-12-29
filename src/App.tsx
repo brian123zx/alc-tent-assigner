@@ -22,24 +22,21 @@ function App() {
   const [result, setResult] = useState<string>();
   const [numCols, setNumCols] = useState<number>();
 
-  const onFileSelected = useCallback(
-    (content: string) => {
-      const parsedContent = Papa.parse(content, {
-        header: true,
-      });
-      setCsv(parsedContent);
-      if (
-        parsedContent.errors.length ||
-        parsedContent.meta.aborted ||
-        parsedContent.meta.truncated
-      ) {
-        setCsvParserError(true);
-      }
-      setAppState("preProcess");
-      setResult(undefined);
-    },
-    [csv]
-  );
+  const onFileSelected = useCallback((content: string) => {
+    const parsedContent = Papa.parse(content, {
+      header: true,
+    });
+    setCsv(parsedContent);
+    if (
+      parsedContent.errors.length ||
+      parsedContent.meta.aborted ||
+      parsedContent.meta.truncated
+    ) {
+      setCsvParserError(true);
+    }
+    setAppState("preProcess");
+    setResult(undefined);
+  }, []);
 
   const onFieldsMapped = useCallback((fields: FieldMap | undefined) => {
     setMappedFields(fields);
@@ -72,7 +69,7 @@ function App() {
         fields: mappedFields,
         numCols,
       } as WorkerData);
-  }, [appState]);
+  }, [appState, csv, mappedFields, numCols, worker]);
 
   const onNumColsChanged = (e: ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -141,7 +138,7 @@ function App() {
             Download
           </a>
           <a
-            href="javascript:void(0)"
+            href="/"
             role="button"
             className="outline"
             onClick={onStartOverClicked}

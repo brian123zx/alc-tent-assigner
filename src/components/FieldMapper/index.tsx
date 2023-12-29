@@ -16,10 +16,13 @@ type FieldRowProps = {
 };
 
 const FieldRow = ({ field, index, onFieldSelect }: FieldRowProps) => {
-  const onSelectChanged = useCallback((e: ChangeEvent<HTMLSelectElement>) => {
-    const { value } = e.target;
-    onFieldSelect(index, value as keyof typeof FieldList);
-  }, []);
+  const onSelectChanged = useCallback(
+    (e: ChangeEvent<HTMLSelectElement>) => {
+      const { value } = e.target;
+      onFieldSelect(index, value as keyof typeof FieldList);
+    },
+    [index, onFieldSelect]
+  );
   return (
     <div className="grid">
       <h6 className={styles.fieldName}>{field}</h6>
@@ -64,7 +67,7 @@ const FieldMapper = ({ fields, onFieldsMapped }: FieldMapperProps) => {
     }
 
     onFieldsMapped(fieldMap as FieldMap);
-  }, [fieldMap]);
+  }, [fieldMap, onFieldsMapped]);
 
   return (
     <Fragment>
