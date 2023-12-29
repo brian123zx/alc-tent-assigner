@@ -2,6 +2,7 @@
   "name": "alc-tent-assigner",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://brian123zx.github.io/alc-tent-assigner/",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
