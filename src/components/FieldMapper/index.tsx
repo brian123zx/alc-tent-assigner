@@ -68,7 +68,9 @@ const FieldMapper = ({ fields, onFieldsMapped }: FieldMapperProps) => {
 
   return (
     <Fragment>
-      Pick the fields from the uploaded spreadsheet to use when processing.
+      <article>
+        Pick the fields from the uploaded spreadsheet to use when processing.
+      </article>
       <div>
         {fields.map((field, idx) => (
           <FieldRow
