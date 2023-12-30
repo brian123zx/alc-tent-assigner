@@ -135,7 +135,7 @@ export const processCsv = (data: WorkerData) => {
   }
   // One last assignment
   assignTeam(sortedData.slice(cur), tentRows, fieldNames);
-
+  return sortedData;
 }
 
 
