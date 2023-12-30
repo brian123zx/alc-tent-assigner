@@ -1,16 +1,21 @@
 /* eslint-disable no-restricted-globals */
 import _ from "lodash";
 import { FieldMap, TENT_ID_FIELD, WorkerData } from "../types";
+import { assignTeam } from "./assignTeam";
 
-type Tent = {
+export type Tent = {
   /**
-   * The acceptance ID of the rider in bed 1
+   * The csv row object of the rider in bed 1
    */
-  bed1?: string;
+  bed1: Record<string, string>;
   /**
-   * The acceptance ID of the rider in bed 2
+   * The csv row object of the rider in bed 2
    */
-  bed2?: string;
+  bed2?: Record<string, string>;
+  /**
+   * Whether one or more riders in this tent has a medical device
+   */
+  isMedical: boolean;
 };
 
 // type TentRow = {
@@ -18,14 +23,14 @@ type Tent = {
 //   tents: Tent[]
 // }
 
-const idOf = (i: number): string => {
+export const idOf = (i: number): string => {
   return (
     (i >= 26 ? idOf(((i / 26) >> 0) - 1) : "") +
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[i % 26 >> 0]
   );
 }
 
-class TentRow {
+export class TentRow {
   rowId: string
   numOpen: number;
   tents: Tent[] = [];
@@ -36,7 +41,50 @@ class TentRow {
   }
 }
 
-type FieldNames = { [k in keyof FieldMap]: string }
+export class Grid {
+  rows: TentRow[] = [];
+  medicalRows: TentRow[] = [];
+  numTents: number;
+  constructor(numTents: number) {
+    this.numTents = numTents;
+  }
+  createRow = (group: TentRow[] = this.rows) => {
+    group.push(new TentRow(this.numTents, group.length));
+    return group[group.length - 1];
+  }
+  placeTents = (tents: Tent[]) => {
+    // @ts-ignore
+    let row: TentRow = _.find(this.rows, r => r.numOpen >= tents.length);
+    if (!row) {
+      row = this.createRow();
+    }
+    tents.forEach(t => {
+      row.tents.push(t);
+      row.numOpen -= 1;
+      t.bed1[TENT_ID_FIELD] = `${row.rowId}${row.tents.length}`;
+      if (t.bed2) t.bed2[TENT_ID_FIELD] = `${row.rowId}${row.tents.length}`;
+      console.log(`Rider(s) assigned to ${t.bed1[TENT_ID_FIELD]}`)
+
+    })
+  }
+  placeMedicalTents = (tents: Tent[]) => {
+    for (let i = 0; i < tents.length; i++) {
+      let row = _.find(this.medicalRows, r => r.numOpen >= 1);
+      if (!row) {
+        row = this.createRow(this.medicalRows);
+      }
+      row.tents.push(tents[i]);
+      row.numOpen -= 1;
+      tents[i].bed1[TENT_ID_FIELD] = `*${row.rowId}${row.tents.length}`;
+      // @ts-ignore
+      if (tents[i].bed2) tents[i].bed2[TENT_ID_FIELD] = `*${row.rowId}${row.tents.length}`;
+      console.log(`Rider(s) assigned to ${tents[i].bed1[TENT_ID_FIELD]}`)
+
+    }
+  }
+}
+
+export type FieldNames = { [k in keyof FieldMap]: string }
 
 export const sortFn = (fieldNames: FieldNames) => (a: Record<string, string>, b: Record<string, string>) => {
   // Coerce empty strings to a deep charcode character so they fall at the end of the sort
@@ -55,19 +103,16 @@ export const sortFn = (fieldNames: FieldNames) => (a: Record<string, string>, b:
           : 0;
 }
 
-self.onmessage = (e: MessageEvent<WorkerData>) => {
-  const config = e.data as WorkerData;
-  console.log("worker data", config);
-
+export const processCsv = (data: WorkerData) => {
   // setup grid datastore
-  const tentRows: TentRow[] = [new TentRow(config.numCols, 0)];
+  const tentRows = new Grid(data.numCols);
 
-  const fieldNames = _.mapValues(config.fields, (fieldIndex) => {
+  const fieldNames = _.mapValues(data.fields, (fieldIndex) => {
     // @ts-expect-error fields really does exist
-    return config.csv.meta.fields[fieldIndex];
+    return data.csv.meta.fields[fieldIndex];
   });
 
-  const sortedData = config.csv.data.sort(
+  const sortedData = data.csv.data.sort(
     sortFn(fieldNames)
   );
 
@@ -84,76 +129,23 @@ self.onmessage = (e: MessageEvent<WorkerData>) => {
     }
 
     // assign cur..i-1;
-    assignTeam(sortedData.slice(cur, i), tentRows, fieldNames, config.numCols);
+    assignTeam(sortedData.slice(cur, i), tentRows, fieldNames);
     // reset cur and continue
     cur = i;
   }
   // One last assignment
-  assignTeam(sortedData.slice(cur), tentRows, fieldNames, config.numCols);
+  assignTeam(sortedData.slice(cur), tentRows, fieldNames);
+
+}
+
+
+
+self.onmessage = (e: MessageEvent<WorkerData>) => {
+  const config = e.data as WorkerData;
+  console.log("worker data", config);
+
+  const result = processCsv(config);
 
   // Return result
-  self.postMessage(sortedData);
-};
-
-/**
- * Assigns a team to the grid. Saves the tent ID to the rider record
- */
-const assignTeam = (team: Record<string, string>[], grid: TentRow[], fieldNames: FieldNames, numCols: number) => {
-  console.log(`assigning ${team.length} rider(s) to team ${team[0][fieldNames.requestId]}`)
-
-  // how many tents do I need?
-  const numAssignments = _.uniqBy(_.filter(team, fieldNames.acceptanceId), r => {
-    return r[fieldNames.acceptanceId]
-  }).length;
-  const numUnassigned = _.filter(team, _.matchesProperty(fieldNames.acceptanceId, '')).length;
-
-  const numTentsNeeded = numAssignments + Math.ceil(numUnassigned / 2);
-
-  const createRow = () => {
-    grid.push(new TentRow(numCols, grid.length));
-    return grid[grid.length - 1];
-  }
-
-  // Find row that can fit
-  let row;
-  for (let i = 0; i < grid.length; i++) {
-    if (grid[i].numOpen >= numTentsNeeded) {
-      row = grid[i];
-      break;
-    }
-  }
-  if (!row) {
-    // Create a new row
-    row = createRow();
-  }
-
-  for (let i = 0; i < team.length; i++) {
-    // Assign to last open tent, if acceptanceId matches and spot is open
-    let tent = _.last(row.tents);
-
-    // Assign rider to second bed in last existing tent if possible
-    if (
-      // bed 2 is empty
-      _.isUndefined(tent?.bed2)
-      // acceptance IDs match
-      && (tent?.bed1 === team[i][fieldNames.acceptanceId])
-      // bed 1 isn't part of a previous team
-      && i !== 0
-    ) {
-      tent.bed2 = team[i][fieldNames.acceptanceId];
-      team[i][TENT_ID_FIELD] = `${row.rowId}${row.tents.length}`
-      console.log(`Rider assigned to ${team[i][TENT_ID_FIELD]}`)
-      continue;
-    }
-
-    // Create a new tent and assign rider
-    row.tents.push({
-      bed1: team[i][fieldNames.acceptanceId]
-    });
-    row.numOpen -= 1;
-    team[i][TENT_ID_FIELD] = `${row.rowId}${row.tents.length}`
-    console.log(`Rider assigned to ${team[i][TENT_ID_FIELD]}`)
-  }
-};
-
-export { };
+  self.postMessage(result);
+};;
