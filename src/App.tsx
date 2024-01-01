@@ -95,14 +95,18 @@ function App() {
           {csv && !csv?.meta?.fields && (
             <div>Your CSV doesn't contain any fields.</div>
           )}
+          {csv?.data.length && <p>Found {csv.data.length} rows.</p>}
           {csvParserError && (
-            <div>
-              There was an error parsing the CSV.
-              <br />
-              <p>Truncated: {csv?.meta.truncated}</p>
-              <p>Aborted: {csv?.meta.aborted}</p>
-              <p>Errors: {JSON.stringify(csv?.errors)}</p>
-            </div>
+            <article>
+              <h6>There were errors parsing the CSV.</h6>
+              <p>
+                The following errors were encountered when parsing the uploaded
+                CSV file. They may or may not impact functionality.
+              </p>
+              {csv?.meta.truncated && <p>Truncated: {csv?.meta.truncated}</p>}
+              {csv?.meta.aborted && <p>Aborted: {csv?.meta.aborted}</p>}
+              {csv?.errors && <p>Errors: {JSON.stringify(csv?.errors)}</p>}
+            </article>
           )}
           {csv?.meta?.fields && (
             <Fragment>
