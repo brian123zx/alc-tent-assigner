@@ -1,4 +1,17 @@
-# Getting Started with Create React App
+# ALC Tent Assigner
+This app was created to assist with the process of assigning ALC riders to tents, given their team assignments and any tent preference.
+
+## Steps
+1. Navigate to https://brian123zx.github.io/alc-tent-assigner/
+2. Select and upload a CSV file that contains the following fields
+   - Proximity request ID
+   - Tent acceptance ID
+   - Medical device: A field that contains true or false for whether the rider has a medical device that requires an outlet
+3. Pick the fields from the CSV that map to the fields listed above
+4. Click Go and wait for tents to be assigned! You can then download the resulting CSV which will include an additional column containing the assignments.
+
+
+# Running locally
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
@@ -29,6 +42,7 @@ Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
+<!--
 ### `yarn eject`
 
 **Note: this is a one-way operation. Once you `eject`, you can’t go back!**
@@ -44,3 +58,4 @@ You don’t have to ever use `eject`. The curated feature set is suitable for sm
 You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
 To learn React, check out the [React documentation](https://reactjs.org/).
+-->
