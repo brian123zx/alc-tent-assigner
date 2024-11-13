@@ -302,7 +302,62 @@ TentRow {
   ],
 }
 `);
-  })
+  });
+
+  it('assigns riders when no req id or acc id defined', async () => {
+    const { assignTeam } = await import('./assignTeam');
+    const grid = new Grid(4);
+    const data = _.cloneDeep(mockData.slice(0, 4))
+    assignTeam(data, grid, {});
+    expect(grid.rows[0]).toMatchInlineSnapshot(`
+TentRow {
+  "numOpen": 0,
+  "rowId": "A",
+  "tents": Array [
+    Object {
+      "bed1": Object {
+        "Tent ID": "A1",
+        "accId": "a",
+        "med": "",
+        "name": "alice",
+        "reqId": "a",
+      },
+      "isMedical": false,
+    },
+    Object {
+      "bed1": Object {
+        "Tent ID": "A2",
+        "accId": "b",
+        "med": "",
+        "name": "bob",
+        "reqId": "a",
+      },
+      "isMedical": false,
+    },
+    Object {
+      "bed1": Object {
+        "Tent ID": "A3",
+        "accId": "b",
+        "med": "",
+        "name": "bob2",
+        "reqId": "a",
+      },
+      "isMedical": false,
+    },
+    Object {
+      "bed1": Object {
+        "Tent ID": "A4",
+        "accId": "",
+        "med": "",
+        "name": "charlie",
+        "reqId": "a",
+      },
+      "isMedical": false,
+    },
+  ],
+}
+`);
+  });
 });
 
 describe("processCsv", () => {

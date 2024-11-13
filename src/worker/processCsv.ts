@@ -28,10 +28,10 @@ export const idOf = (i: number): string => {
     (i >= 26 ? idOf(((i / 26) >> 0) - 1) : "") +
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[i % 26 >> 0]
   );
-}
+};
 
 export class TentRow {
-  rowId: string
+  rowId: string;
   numOpen: number;
   tents: Tent[] = [];
   constructor(numTents: number, index: number) {
@@ -51,25 +51,24 @@ export class Grid {
   createRow = (group: TentRow[] = this.rows) => {
     group.push(new TentRow(this.numTents, group.length));
     return group[group.length - 1];
-  }
+  };
   placeTents = (tents: Tent[]) => {
     // @ts-ignore
-    let row: TentRow = _.find(this.rows, r => r.numOpen >= tents.length);
+    let row: TentRow = _.find(this.rows, (r) => r.numOpen >= tents.length);
     if (!row) {
       row = this.createRow();
     }
-    tents.forEach(t => {
+    tents.forEach((t) => {
       row.tents.push(t);
       row.numOpen -= 1;
       t.bed1[TENT_ID_FIELD] = `${row.rowId}${row.tents.length}`;
       if (t.bed2) t.bed2[TENT_ID_FIELD] = `${row.rowId}${row.tents.length}`;
-      console.log(`Rider(s) assigned to ${t.bed1[TENT_ID_FIELD]}`)
-
-    })
-  }
+      console.log(`Rider(s) assigned to ${t.bed1[TENT_ID_FIELD]}`);
+    });
+  };
   placeMedicalTents = (tents: Tent[]) => {
     for (let i = 0; i < tents.length; i++) {
-      let row = _.find(this.medicalRows, r => r.numOpen >= 1);
+      let row = _.find(this.medicalRows, (r) => r.numOpen >= 1);
       if (!row) {
         row = this.createRow(this.medicalRows);
       }
@@ -77,31 +76,41 @@ export class Grid {
       row.numOpen -= 1;
       tents[i].bed1[TENT_ID_FIELD] = `*${row.rowId}${row.tents.length}`;
       // @ts-ignore
-      if (tents[i].bed2) tents[i].bed2[TENT_ID_FIELD] = `*${row.rowId}${row.tents.length}`;
-      console.log(`Rider(s) assigned to ${tents[i].bed1[TENT_ID_FIELD]}`)
-
+      if (tents[i].bed2)
+        tents[i].bed2[TENT_ID_FIELD] = `*${row.rowId}${row.tents.length}`;
+      console.log(`Rider(s) assigned to ${tents[i].bed1[TENT_ID_FIELD]}`);
     }
-  }
+  };
 }
 
-export type FieldNames = { [k in keyof FieldMap]: string }
+export type FieldNames = { [k in keyof FieldMap]?: string };
 
-export const sortFn = (fieldNames: FieldNames) => (a: Record<string, string>, b: Record<string, string>) => {
-  // Coerce empty strings to a deep charcode character so they fall at the end of the sort
-  const aReqId = a[fieldNames.requestId] || String.fromCharCode(100000);
-  const bReqId = b[fieldNames.requestId] || String.fromCharCode(100000);
-  const aAccId = a[fieldNames.acceptanceId] || String.fromCharCode(100000);
-  const bAccId = b[fieldNames.acceptanceId] || String.fromCharCode(100000);
-  return aReqId > bReqId
-    ? 1
-    : aReqId < bReqId
+export const sortFn =
+  (fieldNames: FieldNames) =>
+  (a: Record<string, string>, b: Record<string, string>) => {
+    // Coerce empty strings to a deep charcode character so they fall at the end of the sort
+    const aReqId =
+      (fieldNames.requestId && a[fieldNames.requestId]) ||
+      String.fromCharCode(100000);
+    const bReqId =
+      (fieldNames.requestId && b[fieldNames.requestId]) ||
+      String.fromCharCode(100000);
+    const aAccId =
+      (fieldNames.acceptanceId && a[fieldNames.acceptanceId]) ||
+      String.fromCharCode(100000);
+    const bAccId =
+      (fieldNames.acceptanceId && b[fieldNames.acceptanceId]) ||
+      String.fromCharCode(100000);
+    return aReqId > bReqId
+      ? 1
+      : aReqId < bReqId
       ? -1
       : aAccId > bAccId
-        ? 1
-        : bAccId > aAccId
-          ? -1
-          : 0;
-}
+      ? 1
+      : bAccId > aAccId
+      ? -1
+      : 0;
+  };
 
 export const processCsv = (data: WorkerData) => {
   // setup grid datastore
@@ -112,9 +121,7 @@ export const processCsv = (data: WorkerData) => {
     return data.csv.meta.fields[fieldIndex];
   });
 
-  const sortedData = data.csv.data.sort(
-    sortFn(fieldNames)
-  );
+  const sortedData = data.csv.data.sort(sortFn(fieldNames));
 
   let cur = 0;
   for (let i = 1; i < sortedData.length; i++) {
@@ -122,7 +129,8 @@ export const processCsv = (data: WorkerData) => {
     const iRecord = sortedData[i];
     if (
       // iRecord[fieldNames.requestId] &&
-      curRecord[fieldNames.requestId] === iRecord[fieldNames.requestId] && (curRecord[fieldNames.requestId] || i - cur < 2)
+      curRecord[fieldNames.requestId] === iRecord[fieldNames.requestId] &&
+      (curRecord[fieldNames.requestId] || i - cur < 1)
     ) {
       // Keep iterating until we find a new team
       continue;
@@ -136,9 +144,7 @@ export const processCsv = (data: WorkerData) => {
   // One last assignment
   assignTeam(sortedData.slice(cur), tentRows, fieldNames);
   return sortedData;
-}
-
-
+};
 
 self.onmessage = (e: MessageEvent<WorkerData>) => {
   const config = e.data as WorkerData;
@@ -148,4 +154,4 @@ self.onmessage = (e: MessageEvent<WorkerData>) => {
 
   // Return result
   self.postMessage(result);
-};;
+};

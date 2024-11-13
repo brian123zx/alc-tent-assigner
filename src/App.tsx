@@ -10,13 +10,13 @@ import "./App.css";
 import FileUploader from "./components/FileUploader";
 import Papa from "papaparse";
 import FieldMapper from "./components/FieldMapper";
-import { AppState, FieldMap, WorkerData } from "./types";
+import { AppState, FieldMap, MaybeFieldMap, WorkerData } from "./types";
 
 import "@picocss/pico/css/pico.min.css";
 
 function App() {
   const [csv, setCsv] = useState<Papa.ParseResult<unknown>>();
-  const [mappedFields, setMappedFields] = useState<FieldMap>();
+  const [mappedFields, setMappedFields] = useState<MaybeFieldMap>();
   const [appState, setAppState] = useState<AppState>("preProcess");
   const [csvParserError, setCsvParserError] = useState<boolean>(false);
   const [result, setResult] = useState<string>();

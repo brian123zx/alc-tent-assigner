@@ -15,7 +15,7 @@ export type AppState = "preProcess" | "processing" | "complete";
 
 export type WorkerData = {
   csv: Papa.ParseResult<Record<string, string>>;
-  fields: FieldMap;
+  fields: MaybeFieldMap;
   numCols: number;
 };
 
